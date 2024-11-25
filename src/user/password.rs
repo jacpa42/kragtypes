@@ -1,12 +1,11 @@
-use std::{convert::Infallible, str::FromStr};
-
 use password_auth::generate_hash;
 use serde::{Deserialize, Serialize};
-use sqlx::{Decode, Encode, FromRow, Sqlite, Type};
+use std::{convert::Infallible, str::FromStr};
 
-#[derive(Debug, Clone, Serialize, FromRow, PartialEq)]
+#[derive(Debug, Clone, Serialize, PartialEq)]
+#[cfg_attr(feature = "sqlite", derive(sqlx::FromRow))]
 pub struct PasswordHash {
-    data: String,
+    pub(crate) data: String,
 }
 
 impl PasswordHash {
@@ -15,24 +14,6 @@ impl PasswordHash {
         Self {
             data: generate_hash(password),
         }
-    }
-}
-
-impl<'r> Encode<'r, Sqlite> for PasswordHash {
-    fn encode_by_ref(
-        &self,
-        buf: &mut <Sqlite as sqlx::Database>::ArgumentBuffer<'r>,
-    ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
-        <String as Encode<Sqlite>>::encode_by_ref(&self.data, buf)
-    }
-}
-
-impl<'r> Decode<'r, Sqlite> for PasswordHash {
-    fn decode(
-        value: <Sqlite as sqlx::Database>::ValueRef<'r>,
-    ) -> Result<Self, sqlx::error::BoxDynError> {
-        let data = <String as Decode<Sqlite>>::decode(value)?;
-        Ok(Self { data })
     }
 }
 
@@ -45,12 +26,6 @@ impl<'de> Deserialize<'de> for PasswordHash {
         Ok(Self {
             data: generate_hash(password_raw),
         })
-    }
-}
-
-impl Type<Sqlite> for PasswordHash {
-    fn type_info() -> <Sqlite as sqlx::Database>::TypeInfo {
-        <str as Type<Sqlite>>::type_info()
     }
 }
 

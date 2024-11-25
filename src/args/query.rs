@@ -1,13 +1,14 @@
-use crate::table::BindValues;
 use crate::{
     email::EmailAddr,
     pass::{session::SessionPass, time::TimePass},
     user::{PassId, PhoneNumber, UserId},
 };
-use backend_proc_macro::BindValues;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "sqlite")]
+use {crate::table::BindValues, backend_proc_macro::BindValues};
 
-#[derive(Default, Debug, Clone, Serialize, Deserialize, BindValues)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "sqlite", derive(BindValues))]
 pub struct QueryUser {
     pub id: Option<UserId>,
     pub username: Option<String>,
@@ -15,7 +16,8 @@ pub struct QueryUser {
     pub number: Option<PhoneNumber>,
 }
 
-#[derive(Default, Debug, Clone, Serialize, Deserialize, BindValues)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "sqlite", derive(BindValues))]
 pub struct QueryUserPass {
     pub id: Option<PassId>,
     pub user_id: Option<UserId>,

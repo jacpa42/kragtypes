@@ -1,3 +1,4 @@
+#![cfg(feature = "sqlite")]
 use crate::table::Queryable;
 use serde::{Deserialize, Serialize};
 

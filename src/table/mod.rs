@@ -1,3 +1,5 @@
+#![cfg(feature = "sqlite")]
+
 pub mod user;
 pub mod user_pass;
 

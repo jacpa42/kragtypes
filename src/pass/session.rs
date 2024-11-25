@@ -1,7 +1,6 @@
 use super::access::{AccessAttempt, AccessMethod, Pass};
 use chrono::{DateTime, Duration, FixedOffset, Timelike, Utc};
 use serde::{Deserialize, Serialize};
-use sqlx::{prelude::Type, Decode, Encode, Sqlite};
 use std::str::FromStr;
 
 #[repr(C)]
@@ -20,42 +19,13 @@ impl Default for SessionPass {
         }
     }
 }
-
-impl Type<Sqlite> for SessionPass {
-    fn type_info() -> <Sqlite as sqlx::Database>::TypeInfo {
-        <[u8] as Type<Sqlite>>::type_info()
-    }
-}
-
-impl<'q> Encode<'q, Sqlite> for SessionPass {
-    fn encode_by_ref(
-        &self,
-        buf: &mut <Sqlite as sqlx::Database>::ArgumentBuffer<'q>,
-    ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
-        assert_eq!(16, std::mem::size_of::<Self>());
-        let raw: &[u8; 16] = unsafe { std::mem::transmute(self) };
-        Encode::<Sqlite>::encode(raw.as_slice(), buf)
-    }
-}
-
-impl<'q> Decode<'q, Sqlite> for SessionPass {
-    fn decode(
-        value: <Sqlite as sqlx::Database>::ValueRef<'q>,
-    ) -> Result<Self, sqlx::error::BoxDynError> {
-        let bytes: &[u8] = Decode::<Sqlite>::decode(value)?;
-        assert_eq!(bytes.len(), std::mem::size_of::<Self>());
-        let tp_pointer: *const SessionPass = unsafe { std::mem::transmute(bytes.as_ptr()) };
-        Ok(unsafe { *tp_pointer })
-    }
-}
-
 impl FromStr for SessionPass {
     type Err = std::num::ParseIntError;
     /// Parses the number of sessions from a string slice.
     ///
     /// # Example
     /// ```
-    /// use kragdb::pass::session::SessionPass;
+    /// use krag_types::pass::session::SessionPass;
     /// use std::str::FromStr;
     ///
     /// let session_pass = SessionPass {

@@ -1,21 +1,25 @@
 pub mod password;
 pub mod permissions;
+pub mod sqlx_impl;
 
-use crate::args::create::CreateUser;
-use crate::args::query::QueryUser;
-use crate::permissions::Permissions;
-use crate::table::BindValues;
-use crate::{email::EmailAddr, table::Queryable};
-use axum_login::AuthUser;
-use backend_proc_macro::BindValues;
+use crate::email::EmailAddr;
 use password::PasswordHash;
+use permissions::Permissions;
+
+#[cfg(feature = "sqlite")]
+use {
+    crate::table::{BindValues, Queryable},
+    backend_proc_macro::BindValues,
+};
+
 use serde::{ser::SerializeStruct, Deserialize, Serialize};
 
 pub type PhoneNumber = i64;
 pub type UserId = i32;
 pub type PassId = i64;
 
-#[derive(Clone, Deserialize, sqlx::FromRow, PartialEq, BindValues)]
+#[derive(Clone, Deserialize, PartialEq)]
+#[cfg_attr(feature = "sqlite", derive(BindValues, sqlx::FromRow))]
 pub struct User {
     pub id: UserId,
     pub username: String,
@@ -25,9 +29,10 @@ pub struct User {
     pub permissions: Permissions,
 }
 
+#[cfg(feature = "sqlite")]
 impl Queryable for User {
-    type CreateArgs = CreateUser;
-    type QueryArgs = QueryUser;
+    type CreateArgs = crate::args::create::CreateUser;
+    type QueryArgs = crate::args::query::QueryUser;
 }
 
 impl Default for User {
@@ -72,7 +77,8 @@ impl std::fmt::Debug for User {
     }
 }
 
-impl AuthUser for User {
+#[cfg(feature = "auth")]
+impl axum_login::AuthUser for User {
     type Id = UserId;
 
     fn id(&self) -> Self::Id {

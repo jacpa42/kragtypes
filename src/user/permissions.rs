@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use sqlx::{Decode, Encode, Sqlite, Type};
 
 bitflags::bitflags! {
     /// The goal here is to define which actions a user of the database can perform.
@@ -69,29 +68,5 @@ impl<'de> Deserialize<'de> for Permissions {
         D: serde::Deserializer<'de>,
     {
         <u32 as Deserialize>::deserialize(deserializer).map(Permissions::from_bits_truncate)
-    }
-}
-
-impl Type<Sqlite> for Permissions {
-    fn type_info() -> <Sqlite as sqlx::Database>::TypeInfo {
-        <u32 as sqlx::Type<Sqlite>>::type_info()
-    }
-}
-
-impl<'q> Encode<'q, Sqlite> for Permissions {
-    fn encode_by_ref(
-        &self,
-        buf: &mut <Sqlite as sqlx::Database>::ArgumentBuffer<'q>,
-    ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
-        Encode::<'q, Sqlite>::encode_by_ref(&self.bits(), buf)
-    }
-}
-
-impl<'r> Decode<'r, Sqlite> for Permissions {
-    fn decode(
-        value: <Sqlite as sqlx::Database>::ValueRef<'r>,
-    ) -> Result<Self, sqlx::error::BoxDynError> {
-        let val = <u32 as Decode<Sqlite>>::decode(value)?;
-        Ok(Self::from_bits_truncate(val))
     }
 }

@@ -1,7 +1,6 @@
 use fast_chemail::{parse_email, ParseError};
 use serde::{de::Visitor, Deserialize, Serialize};
 use smol_str::SmolStr;
-use sqlx::{sqlite::SqliteTypeInfo, Decode, Encode, Sqlite, Type};
 use std::str::FromStr;
 
 #[derive(Serialize, PartialEq, Debug, Clone)]
@@ -39,27 +38,30 @@ impl AsRef<str> for EmailAddr {
     }
 }
 
-impl<'q> Encode<'q, Sqlite> for EmailAddr {
+#[cfg(feature = "sqlite")]
+impl<'q> sqlx::Encode<'q, sqlx::Sqlite> for EmailAddr {
     fn encode_by_ref(
         &self,
-        buf: &mut <Sqlite as sqlx::Database>::ArgumentBuffer<'q>,
+        buf: &mut <sqlx::Sqlite as sqlx::Database>::ArgumentBuffer<'q>,
     ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
-        Encode::<'q, Sqlite>::encode_by_ref(&self.0.to_string(), buf)
+        sqlx::Encode::<'q, sqlx::Sqlite>::encode_by_ref(&self.0.to_string(), buf)
     }
 }
 
-impl<'r> Decode<'r, Sqlite> for EmailAddr {
+#[cfg(feature = "sqlite")]
+impl<'r> sqlx::Decode<'r, sqlx::Sqlite> for EmailAddr {
     fn decode(
-        value: <Sqlite as sqlx::Database>::ValueRef<'r>,
+        value: <sqlx::Sqlite as sqlx::Database>::ValueRef<'r>,
     ) -> Result<Self, sqlx::error::BoxDynError> {
-        let email = <String as Decode<Sqlite>>::decode(value)?;
+        let email = <String as sqlx::Decode<sqlx::Sqlite>>::decode(value)?;
         Ok(Self(email.into()))
     }
 }
 
-impl Type<Sqlite> for EmailAddr {
-    fn type_info() -> SqliteTypeInfo {
-        <String as Type<Sqlite>>::type_info()
+#[cfg(feature = "sqlite")]
+impl sqlx::Type<sqlx::Sqlite> for EmailAddr {
+    fn type_info() -> sqlx::sqlite::SqliteTypeInfo {
+        <String as sqlx::Type<sqlx::Sqlite>>::type_info()
     }
 }
 

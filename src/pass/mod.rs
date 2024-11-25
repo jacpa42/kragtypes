@@ -1,17 +1,22 @@
-use crate::args::{create::CreateUserPass, query::QueryUserPass};
-use crate::table::{BindValues, Queryable};
-use backend_proc_macro::BindValues;
+pub mod access;
+pub mod session;
+pub mod sqlx_impl;
+pub mod time;
+
 use serde::{Deserialize, Serialize};
 use session::SessionPass;
 use time::TimePass;
 
 use crate::user::{PassId, UserId};
 
-pub mod access;
-pub mod session;
-pub mod time;
+#[cfg(feature = "sqlite")]
+use {
+    crate::table::{BindValues, Queryable},
+    backend_proc_macro::BindValues,
+};
 
-#[derive(Serialize, Deserialize, sqlx::FromRow, Debug, Clone, Copy, BindValues, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "sqlite", derive(sqlx::FromRow, BindValues))]
 pub struct UserPass {
     pub id: PassId,
     pub user_id: UserId,
@@ -19,7 +24,8 @@ pub struct UserPass {
     pub session_pass: SessionPass,
 }
 
+#[cfg(feature = "sqlite")]
 impl Queryable for UserPass {
-    type CreateArgs = CreateUserPass;
-    type QueryArgs = QueryUserPass;
+    type CreateArgs = crate::args::create::CreateUserPass;
+    type QueryArgs = crate::args::query::QueryUserPass;
 }
