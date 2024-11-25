@@ -15,6 +15,15 @@ impl PasswordHash {
             data: generate_hash(password),
         }
     }
+
+    /// # Safety
+    /// The developer must pass valid utf8 to this struct. This will store the plain password when called,
+    /// hence it should almost never be used in production. I have included it for testing
+    pub unsafe fn with_no_hash(password: impl AsRef<[u8]>) -> Self {
+        Self {
+            data: String::from_utf8_unchecked(password.as_ref().to_vec()),
+        }
+    }
 }
 
 impl<'de> Deserialize<'de> for PasswordHash {
