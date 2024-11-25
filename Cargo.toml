@@ -21,4 +21,4 @@ sqlx = { version = "0.8.2", default-features = false, optional = true, features 
 ] }
 backend_proc_macro = { path = "backend_proc_macro", optional = true }
 bitflags = "2.6.0"
-password-auth = { version = "1.0.0", optional = true }
+password-auth = { version = "1.0.0" }
