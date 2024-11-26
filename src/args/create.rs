@@ -23,7 +23,7 @@ pub struct CreateUser {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "sqlite", derive(BindValues))]
 pub struct CreateUserPass {
-    pub id: Option<PassId>,
+    pub id: PassId,
     pub user_id: UserId,
     pub time_pass: TimePass,
     pub session_pass: SessionPass,
