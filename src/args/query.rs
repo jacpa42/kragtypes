@@ -1,7 +1,7 @@
 use crate::{
     email::EmailAddr,
     pass::{session::SessionPass, time::TimePass},
-    user::{PassId, PhoneNumber, UserId},
+    user::{permissions::Permissions, PassId, PhoneNumber, UserId},
 };
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "sqlite")]
@@ -14,6 +14,7 @@ pub struct QueryUser {
     pub username: Option<String>,
     pub email: Option<EmailAddr>,
     pub number: Option<PhoneNumber>,
+    pub permissions: Option<Permissions>,
 }
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
